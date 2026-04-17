@@ -1,0 +1,78 @@
+<div class="container py-5">
+    <div class="progress mb-4" style="height: 20px;">
+        <div class="progress-bar" role="progressbar" ng-style="{'width': (currentStep/4)*100 + '%'}">
+            Lépés: {{currentStep}} / 4
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            
+            <div class="card shadow" ng-show="currentStep === 1">
+                <div class="card-header bg-dark text-white"><h5>1. Kosár ellenőrzése</h5></div>
+                <div class="card-body">
+                    <div ng-repeat="t in termekek" class="d-flex justify-content-between border-bottom py-2">
+                        <span>{{t.adat.nev}} ({{t.db}} db)</span>
+                        <span class="fw-bold">{{t.adat.ar * t.db | number}} Ft</span>
+                    </div>
+                    <div class="text-end mt-3"><h4>Összesen: {{reszosszeg() | number}} Ft</h4></div>
+                    <button class="btn btn-primary w-100 mt-3" ng-click="nextStep()">Tovább a szállításhoz</button>
+                </div>
+            </div>
+
+            <div class="card shadow" ng-show="currentStep === 2">
+                <div class="card-header bg-primary text-white"><h5>2. Szállítási adatok</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12"><input type="text" class="form-control" placeholder="Teljes név" ng-model="form.vevo.nev"></div>
+                        <div class="col-md-4"><input type="text" class="form-control" placeholder="Irsz." ng-model="form.vevo.irsz"></div>
+                        <div class="col-md-8"><input type="text" class="form-control" placeholder="Város, Utca, Házszám" ng-model="form.vevo.cim"></div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Szállítási mód:</label>
+                            <select class="form-select" ng-model="form.szallitas" 
+                                    ng-options="s.nev + ' (+' + s.ar + ' Ft)' for s in szallitasiModok"></select>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button class="btn btn-secondary" ng-click="prevStep()">Vissza</button>
+                        <button class="btn btn-primary" ng-click="nextStep()">Tovább a fizetéshez</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow" ng-show="currentStep === 3">
+                <div class="card-header bg-success text-white"><h5>3. Fizetés megerősítése</h5></div>
+                <div class="card-body">
+                    <h6>Fizetendő: <span class="text-danger">{{vegosszeg() | number}} Ft</span></h6>
+                    <hr>
+                    <label class="form-label">Fizetési mód:</label>
+                    <select class="form-select mb-3" ng-model="form.fizetes" ng-options="f.nev for f in fizetesiModok"></select>
+
+                    <div class="bg-light p-3 border rounded" ng-show="form.fizetes.id === 'kartya'">
+                        <input type="text" class="form-control mb-2" placeholder="Kártyaszám (16 számjegy)" ng-model="form.kartya.szam">
+                        <div class="row">
+                            <div class="col"><input type="text" class="form-control" placeholder="MM/YY" ng-model="form.kartya.lejarat"></div>
+                            <div class="col"><input type="password" class="form-control" placeholder="CVV" ng-model="form.kartya.cvv"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button class="btn btn-secondary" ng-click="prevStep()" ng-disabled="loading">Vissza</button>
+                        <button class="btn btn-success" ng-click="finishOrder()" ng-disabled="loading">
+                            <span ng-show="!loading">Rendelés megrendelése</span>
+                            <span ng-show="loading">Feldolgozás...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center p-5 card shadow" ng-show="currentStep === 4">
+                <div class="display-1 text-success">✔</div>
+                <h2 class="mt-3">Köszönjük a rendelést, {{form.vevo.nev}}!</h2>
+                <p class="text-muted">A visszaigazoló e-mailt elküldtük az adatai alapján.</p>
+                <a href="index.html" class="btn btn-outline-primary mt-3">Vissza a főoldalra</a>
+            </div>
+
+        </div>
+    </div>
+</div>

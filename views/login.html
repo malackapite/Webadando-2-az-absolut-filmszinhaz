@@ -1,0 +1,19 @@
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <form id="bejelentkezes-form" ng-class="shakeClass" ng-submit="handleSubmit()">
+        
+        <div class="mb-3" ng-repeat="input in inputs">
+            <label class="form-label">{{ input.columnName }}:</label>
+            <input 
+                type="{{ input.dataType }}" 
+                class="form-control" 
+                ng-model="adatok[input.columnName]" 
+                required>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+            <button type="submit" class="btn btn-primary">
+                Bejelentkezés
+            </button>
+        </div>
+    </form>
+</div>

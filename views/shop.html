@@ -1,0 +1,97 @@
+<header class="container py-3 d-flex justify-content-between border-bottom">
+    <h1>CatShop</h1>
+    <div id="kosar" data-bs-toggle="modal" data-bs-target="#kosarPanel" class="position-relative">
+        <svg width="32" height="32" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+            <path
+                d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+        </svg>
+        <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle"
+            ng-show="getKosarDb() > 0">
+            {{ getKosarDb() }}
+        </span>
+    </div>
+</header>
+
+<main class="container mt-4">
+    <div class="row">
+        <div id="macska3D" class="col-md-8 bg-light rounded"></div>
+
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm">
+                <h2>{{ cats[nth].nev }}</h2>
+                <p>Szín: {{ cats[nth].szin }} | Kor: {{ cats[nth].kor }} év</p>
+                <div class="input-group">
+                    <input type="number" ng-model="vasaroltDb" class="form-control" min="1">
+                    <button class="btn btn-primary" ng-click="vasarol()">Kosárba</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-group w-100 mt-4">
+        <button class="btn btn-secondary" ng-click="lapoz(-1)">&lt;</button>
+        <button ng-repeat="c in cats" class="btn btn-secondary" ng-class="{'active': $index === nth}"
+            ng-click="ugrik($index)">
+            {{ $index + 1 }}
+        </button>
+        <button class="btn btn-secondary" ng-click="lapoz(1)">&gt;</button>
+    </div>
+</main>
+
+<div class="modal fade" id="kosarPanel" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Rendelésed tartalma</h5>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Név</th>
+                            <th>Szín</th>
+                            <th>DB</th>
+                            <th>Művelet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="(id, db) in kosarlista">
+                            <td>{{ getCatById(id).nev }}</td>
+                            <td>{{ getCatById(id).szin }}</td>
+                            <td>{{ db }} db</td>
+                            <td><button class="btn btn-danger btn-sm" ng-click="torol(id)">Törlés</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div ng-if="getKosarDb() === 0" class="text-center">A kosár üres.</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" ng-click="fizetes()"
+                    ng-disabled="getKosarDb() === 0">Fizetés</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="module">
+    import * as THREE from './three.module.js';
+    import { APP } from './app.js';
+    import { VRButton } from './VRButton.js';
+
+    window.THREE = THREE; // Used by APP Scripts.
+    window.VRButton = VRButton; // Used by APP Scripts.
+
+    THREE.ColorManagement.enabled = true;
+
+    var loader = new THREE.FileLoader();
+    loader.load('app.json', function (text) {
+        var player = new APP.Player();
+        player.load(JSON.parse(text));
+        player.setSize(document.getElementById("macska3D").clientWidth, document.getElementById("macska3D").clientHeight);
+        player.play();
+        document.getElementById("macska3D").appendChild(player.dom);
+
+        window.addEventListener('resize', function () {
+            player.setSize(document.getElementById("macska3D").clientWidth, document.getElementById("macska3D").clientHeight);
+        });
+    });
+</script>
