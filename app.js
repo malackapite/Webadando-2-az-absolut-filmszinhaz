@@ -1,10 +1,9 @@
-import { OBJEKTUMLISTA } from './adat.js';
 import * as THREE from './three.module.js';
 
 var APP = {
-
+	
 	Player: function () {
-
+		
 		var renderer = new THREE.WebGLRenderer({
 			antialias: true,
 			alpha: true,
@@ -12,33 +11,64 @@ var APP = {
 		});
 		renderer.setPixelRatio(window.devicePixelRatio); // TODO: Use player.setPixelRatio()
 		renderer.outputEncoding = THREE.sRGBEncoding;
-
+		
 		var loader = new THREE.ObjectLoader();
 		var camera, scene;
 
 		var vrButton = VRButton.createButton(renderer); // eslint-disable-line no-undef
-
+		
 		var events = {};
-
+		
 		var dom = document.createElement('div');
 		dom.appendChild(renderer.domElement);
-
+		
 		this.dom = dom;
-
+		
 		this.width = 500;
 		this.height = 500;
-
+		
 		const fingIdo = new THREE.Clock();
 		const idoCam = new THREE.Clock();
-
+		const raycaster = new THREE.Raycaster();
+		const clickMouse = new THREE.Vector2();
+		
 		let nth = [0, 0]; // nth[0] a jelenlegi, nth[1] a következő index
-		const distance = 1.5
+		const distance = 1.5;
 
 		this.setNth = function (value) {
 				idoCam.start() // Kamera animáció újraindítása
 				nth[0] = nth[1]; // Előző érték átmentése
 				nth[1] = value; 
         };
+
+		const onMouseClick = function (event) {
+			if (!scene || !camera) return;
+
+			const rect = renderer.domElement.getBoundingClientRect();
+			clickMouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+			clickMouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+			raycaster.setFromCamera(clickMouse, camera);
+			const intersects = raycaster.intersectObjects(scene.children, true);
+			if (intersects.length > 0) {
+				const foundObject = intersects[0].object;
+				
+				if (foundObject.name.includes("fart")) {
+					
+					const masik = foundObject.parent.clone();
+					
+					fingIdo.start();
+					
+					// Hozzáadjuk a klónt a nagyszülőhöz
+					if (foundObject.parent.parent) {
+						foundObject.parent.parent.add(masik);
+					}
+					
+					foundObject.parent.clear();
+					new Audio('fart.mp3').play();
+				}
+			}
+			
+		};
 
 		this.load = function (json) {
 
@@ -130,7 +160,7 @@ var APP = {
 					var clone = baseCat.clone();
 					
 					clone.name = "macska" + (ix + 1); // Azonosító az animációhoz
-					clone.position.x = distance + (distance * (ix + 1));
+					clone.position.x = distance + (distance * ix);
 					
 					if (clone.children[1] && clone.children[1].children[0]) {
 						clone.children[1].children[0].name = "fart" + (ix + 1);
@@ -138,35 +168,7 @@ var APP = {
 					
 					scene.add(clone);
 				}
-			};
-			const raycaster = new THREE.Raycaster();
-			const clickMouse = new THREE.Vector2();
-
-			window.addEventListener("click", event => {
-				const rect = renderer.domElement.getBoundingClientRect();
-				clickMouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-				clickMouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-				raycaster.setFromCamera(clickMouse, camera);
-				const intersects = raycaster.intersectObjects(scene.children, true);
-				if (intersects.length > 0) {
-					let foundObject = intersects[0].object;
-					
-					if (foundObject.name.includes("fart")) {
-						
-						var masik = foundObject.parent.clone();
-						
-						fingIdo.start();
-						
-						// Hozzáadjuk a klónt a nagyszülőhöz
-						if (foundObject.parent.parent) {
-							foundObject.parent.parent.add(masik);
-						}
-						
-						foundObject.parent.clear();
-						new Audio('fart.mp3').play();
-					}
-				}
-			})
+			};	
 		};
 		
 
@@ -282,6 +284,7 @@ var APP = {
 
 			dispatch(events.start, arguments);
 
+			renderer.domElement.addEventListener("click", onMouseClick);
 			renderer.setAnimationLoop(animate);
 
 		};
@@ -298,6 +301,7 @@ var APP = {
 
 			dispatch(events.stop, arguments);
 
+			renderer.domElement.removeEventListener("click", onMouseClick);
 			renderer.setAnimationLoop(null);
 
 		};

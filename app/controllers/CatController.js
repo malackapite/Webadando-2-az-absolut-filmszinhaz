@@ -43,6 +43,13 @@ angular.module('catApp')
         }, 100);
     }
 
+    $scope.$on('$destroy', function() {
+    if (player) {
+        player.stop(); 
+        player.dispose(); 
+        }
+    });
+
     // Lapozás
     $scope.lapoz = function(irany) {
         let ujIndex = $scope.nth + irany;

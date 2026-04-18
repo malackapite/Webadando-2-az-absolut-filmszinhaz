@@ -19,7 +19,9 @@
         <div class="col-md-4">
             <div class="card p-3 shadow-sm">
                 <h2>{{ cats[nth].nev }}</h2>
-                <p>Szín: {{ cats[nth].szin }} | Kor: {{ cats[nth].kor }} év</p>
+                <p>Szín: {{ cats[nth].szin }} </p>
+                <p>Kor: {{ cats[nth].kor }} év</p>
+                <p>Ár: {{ cats[nth].ar | number: 0 }} Ft</p>
                 <div class="input-group">
                     <input type="number" ng-model="vasaroltDb" class="form-control" min="1">
                     <button class="btn btn-primary" ng-click="vasarol()">Kosárba</button>
