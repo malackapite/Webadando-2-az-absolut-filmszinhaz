@@ -1,12 +1,14 @@
 ﻿using Backend.DAL;
+using Backend.Models.Felhasznalo;
 using Backend.Models.Macska;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Controllers
 {
-    [Route("macska")]
+    [Route("macska"), Authorize(Policy = nameof(Felhasznalo.Engedely.TermekekKezelese))]
     public class MacskaController(IDbContext context) : TableController<int, Macska, MacskaDTO>(context)
     {
         protected override DbSet<Macska> DbSet => context.Macskak;
@@ -15,7 +17,7 @@ namespace Backend.Controllers
         public override async Task<ActionResult<MacskaDTO>> Get([FromRoute] int id) => await PerformGetAsync(id);
 
         [HttpPatch]
-        public async Task<ActionResult<MacskaDTO>> Patch([FromBody] MacskaPatch macska) => await CheckIfModelStateIsValidAsync(async () => await PerformPatchAsync(macska, macska.Id));
+        public async Task<ActionResult<MacskaDTO>> Patch([FromBody] MacskaPatch macskaPatch) => await CheckIfModelStateIsValidAsync(async () => await PerformPatchAsync(macskaPatch, macskaPatch.Id));
 
         [HttpDelete("{id}")]
         public override async Task<ActionResult<MacskaDTO>> Delete([FromRoute] int id) => await PerformDeleteAsync(id);

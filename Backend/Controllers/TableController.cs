@@ -6,25 +6,22 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Backend.Controllers
 {
-    [ApiController]
-    public abstract class TableController<TPrimaryKey, TDbFormat, TJsonFormat>(IDbContext context) : ControllerBase()
+    public abstract class TableController<TPrimaryKey, TDbFormat, TJsonFormat>(IDbContext context) : ControllerContext(context)
         where TDbFormat : class, IConvertible<TJsonFormat>
         where TJsonFormat : class, IConvertible<TDbFormat>
     {
-        protected readonly IDbContext context = context;
-
         protected abstract DbSet<TDbFormat> DbSet { get; }
 
         [AllowAnonymous]
         public abstract Task<ActionResult<TJsonFormat>> Get([FromRoute] TPrimaryKey pk);
 
         [HttpGet, AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<TJsonFormat>>> Get() => await ConvertAllToDTOAsync(DbSet);
+        public virtual async Task<ActionResult<IEnumerable<TJsonFormat>>> Get() => await ConvertAllToDTOAsync(DbSet);
 
         protected async Task<ActionResult<TJsonFormat>> PerformGetAsync(params object?[]? pk) => await CheckIfNotFoundAsync(async (TDbFormat record) => record.Convert(), pk);
 
         [HttpPost]
-        public async Task<ActionResult<TJsonFormat>> Post([FromBody] TJsonFormat data) => await CheckIfModelStateIsValidAsync(async () => await HandlePostAsync(data.Convert()));
+        public virtual async Task<ActionResult<TJsonFormat>> Post([FromBody] TJsonFormat data) => await CheckIfModelStateIsValidAsync(async () => await HandlePostAsync(data.Convert()));
 
         [HttpPut]
         public virtual async Task<ActionResult<TJsonFormat>> Put([FromBody] TJsonFormat data) => StatusCode(405);
@@ -38,7 +35,7 @@ namespace Backend.Controllers
             });
         }
 
-        async Task<ActionResult<TJsonFormat>> HandlePostAsync(TDbFormat record) => await TrySaveRecord(record, DbSet.Add);
+        protected async Task<ActionResult<TJsonFormat>> HandlePostAsync(TDbFormat record) => await TrySaveRecord(record, DbSet.Add);
 
         protected async Task<ActionResult<TJsonFormat>> PerformPatchAsync<TPatchDTO>(TPatchDTO data, params object?[]? pk) where TPatchDTO : IPatchDTO<TDbFormat>
             => await CheckIfNotFoundAsync(async (TDbFormat record) => await TrySaveRecord(record, data.Patch), pk)
@@ -55,7 +52,7 @@ namespace Backend.Controllers
 
         protected async Task<ActionResult<TJsonFormat>> PerformDeleteAsync(params object?[]? pk) => await CheckIfNotFoundAsync(async (TDbFormat record) => await TrySaveRecord(record, DbSet.Remove), pk);
 
-        static async Task<List<TJsonFormat>> ConvertAllToDTOAsync(IQueryable<TDbFormat> records) => (await records.ToListAsync()).ConvertAll(static (TDbFormat record) => record.Convert());
+        protected static async Task<List<TJsonFormat>> ConvertAllToDTOAsync(IQueryable<TDbFormat> records) => (await records.ToListAsync()).ConvertAll(static (TDbFormat record) => record.Convert());
 
         async Task<ActionResult<TJsonFormat>> TrySaveRecord(TDbFormat record, Func<TDbFormat, EntityEntry<TDbFormat>> action) => await TrySaveRecord(record, (TDbFormat record) => {
             action(record);
@@ -75,24 +72,10 @@ namespace Backend.Controllers
             }
         });
 
-        async Task<ActionResult<TJsonFormat>> CheckIfNotFoundAsync(Func<TDbFormat, Task<ActionResult<TJsonFormat>>> handleRequest, params object?[]? pk)
+        protected async Task<ActionResult<TJsonFormat>> CheckIfNotFoundAsync(Func<TDbFormat, Task<ActionResult<TJsonFormat>>> handleRequest, params object?[]? pk)
         {
             TDbFormat? record = await DbSet.FindAsync(pk);
             return record is not null ? await handleRequest(record) : NotFound();
-        }
-
-        protected async Task<ActionResult<TJsonFormat>> CheckIfModelStateIsValidAsync(Func<Task<ActionResult<TJsonFormat>>> handleRequest) => ModelState.IsValid ? await handleRequest() : BadRequest(ModelState);
-
-        async Task<ActionResult<T>> HandleDbUpdateException<T>(Func<Task<ActionResult<T>>> func)
-        {
-            try
-            {
-                return await func();
-            }
-            catch (DbUpdateException e)
-            {
-                return BadRequest(e.GetInnerMostExceptionMessage());
-            }
         }
     }
 }

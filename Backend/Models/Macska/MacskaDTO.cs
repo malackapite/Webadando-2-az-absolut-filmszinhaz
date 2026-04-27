@@ -8,7 +8,8 @@
             Id = Id,
             Nev = Nev,
             Szin = Szin,
-            Kor = Kor
+            Kor = Kor,
+            Ar = Ar
         };
     }
 }
