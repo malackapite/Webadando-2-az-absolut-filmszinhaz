@@ -11,13 +11,13 @@ using System.Security.Claims;
 namespace Backend.Controllers
 {
     [Route("rendeles"), Authorize(Policy = nameof(Felhasznalo.Engedely.RendelesekKeszitese))]
-    public class RendelesController(IDbContext context) : ControllerContext(context)
+    public class RendelesController(AppDbContext context) : ControllerContext(context)
     {
         [HttpGet, AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<RendelesAdatok>>> Get() => await PerformGetAll();
+        public async Task<ActionResult<IEnumerable<RendelesAdatokOut>>> Get() => await PerformGetAll();
 
         [HttpGet("{id}"), AllowAnonymous]
-        public async Task<ActionResult<RendelesAdatok>> Get([FromRoute] int id)
+        public async Task<ActionResult<RendelesAdatokOut>> Get([FromRoute] int id)
         {
             var rendelesAdatok = await context.Rendelesek
                 .Where((Rendeles rendeles) => rendeles.Id == id)
@@ -29,7 +29,7 @@ namespace Backend.Controllers
                 })
                 .FirstOrDefaultAsync()
             ;
-            return rendelesAdatok is null ? NotFound() : new RendelesAdatok {
+            return rendelesAdatok is null ? NotFound() : new RendelesAdatokOut {
                 Id = id,
                 Email = rendelesAdatok.Email,
                 SzallitasiCim = rendelesAdatok.SzallitasiCim,
@@ -43,7 +43,7 @@ namespace Backend.Controllers
                     })
                     .ToListAsync()
                 )
-                .ConvertAll(static macskakAdatok => new Item<MacskaDTO> {
+                .ConvertAll(static macskakAdatok => new ItemOut {
                     Macska = macskakAdatok.Macska.Convert(),
                     Mennyiseg = macskakAdatok.Mennyiseg
                 })
@@ -51,18 +51,18 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<RendelesAdatok>> Post([FromBody] RendelesData rendelesData)
-            => await CheckIfModelStateIsValidAsync(async () => await HandleDbUpdateException<RendelesAdatok>(async () => {
+        public async Task<ActionResult<RendelesAdatokOut>> Post([FromBody] RendelesAdatokIn rendelesAdatokIn)
+            => await CheckIfModelStateIsValidAsync(async () => await HandleDbUpdateException<RendelesAdatokOut>(async () => {
                 if (!int.TryParse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int felhasznaloId))
                 {
                     return Unauthorized();
                 }
                 Rendeles rendeles = new Rendeles {
                     Felhasznalo = felhasznaloId,
-                    SzallitasiCim = rendelesData.SzallitasiCim,
+                    SzallitasiCim = rendelesAdatokIn.SzallitasiCim,
                     RendelesIdeje = DateTime.UtcNow,
-                    _RendeleshezTartozikok = [.. rendelesData.RendeltMacskak
-                        .Select(static (Item<int> item) => new RendeleshezTartozik {
+                    _RendeleshezTartozikok = [.. rendelesAdatokIn.RendeltMacskak
+                        .Select(static (ItemIn item) => new RendeleshezTartozik {
                             Macska = item.Macska,
                             Mennyiseg = item.Mennyiseg
                         })
@@ -79,7 +79,7 @@ namespace Backend.Controllers
                     })
                     .SingleAsync()
                 ;
-                return new RendelesAdatok {
+                return new RendelesAdatokOut {
                     Id = rendeles.Id,
                     Email = rendelesAdatok.Email,
                     SzallitasiCim = rendeles.SzallitasiCim,
@@ -93,7 +93,7 @@ namespace Backend.Controllers
                         })
                         .ToListAsync()
                     )
-                    .ConvertAll(static macskakAdatok => new Item<MacskaDTO> {
+                    .ConvertAll(static macskakAdatok => new ItemOut {
                         Macska = macskakAdatok.Macska.Convert(),
                         Mennyiseg = macskakAdatok.Mennyiseg
                     })
@@ -102,7 +102,7 @@ namespace Backend.Controllers
         ;
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<RendelesAdatok>> Delete([FromRoute] int id) => await HandleDbUpdateException<RendelesAdatok>(async () => {
+        public async Task<ActionResult<RendelesAdatokOut>> Delete([FromRoute] int id) => await HandleDbUpdateException<RendelesAdatokOut>(async () => {
             Rendeles? rendeles = await context.Rendelesek.FindAsync(id);
             if (rendeles is null)
             {
@@ -116,7 +116,7 @@ namespace Backend.Controllers
                 })
                 .SingleAsync()
             ;
-            List<Item<MacskaDTO>> rendeltMacskak = (await context.RendeleshezTartozikok
+            List<ItemOut> rendeltMacskak = (await context.RendeleshezTartozikok
                 .Where((RendeleshezTartozik rendeleshezTartozik) => rendeleshezTartozik.Rendeles == rendeles.Id)
                 .Select(static (RendeleshezTartozik rendeleshezTartozik) => new {
                     Macska = rendeleshezTartozik._Macska,
@@ -124,13 +124,13 @@ namespace Backend.Controllers
                 })
                 .ToListAsync()
             )
-            .ConvertAll(static macskakAdatok => new Item<MacskaDTO> {
+            .ConvertAll(static macskakAdatok => new ItemOut {
                 Macska = macskakAdatok.Macska.Convert(),
                 Mennyiseg = macskakAdatok.Mennyiseg
             });
             context.Rendelesek.Remove(rendeles);
             await context.SaveChangesAsync();
-            return new RendelesAdatok {
+            return new RendelesAdatokOut {
                 Id = rendeles.Id,
                 Email = rendelesAdatok.Email,
                 SzallitasiCim = rendeles.SzallitasiCim,
@@ -141,13 +141,13 @@ namespace Backend.Controllers
         });
 
         [HttpDelete]
-        public async Task<ActionResult<IEnumerable<RendelesAdatok>>> Delete() => await HandleDbUpdateException<IEnumerable<RendelesAdatok>>(async () => {
-            RendelesAdatok[] rendelesAdatokok = await PerformGetAll();
+        public async Task<ActionResult<IEnumerable<RendelesAdatokOut>>> Delete() => await HandleDbUpdateException<IEnumerable<RendelesAdatokOut>>(async () => {
+            RendelesAdatokOut[] rendelesAdatokOutok = await PerformGetAll();
             await context.Rendelesek.ExecuteDeleteAsync();
-            return rendelesAdatokok;
+            return rendelesAdatokOutok;
         });
 
-        async Task<RendelesAdatok[]> PerformGetAll()
+        async Task<RendelesAdatokOut[]> PerformGetAll()
         {
             var rendelesAdatok = await context.Rendelesek
                 .Select(static (Rendeles rendeles) => new {
@@ -159,11 +159,11 @@ namespace Backend.Controllers
                 })
                 .ToListAsync()
             ;
-            RendelesAdatok[] rendelesAdatokok = new RendelesAdatok[rendelesAdatok.Count];
+            RendelesAdatokOut[] rendelesAdatokOutok = new RendelesAdatokOut[rendelesAdatok.Count];
             for (int i = 0; i < rendelesAdatok.Count; i++)
             {
                 var currentRendelesAdatok = rendelesAdatok[i];
-                rendelesAdatokok[i] = new RendelesAdatok {
+                rendelesAdatokOutok[i] = new RendelesAdatokOut {
                     Id = currentRendelesAdatok.Id,
                     Email = currentRendelesAdatok.Email,
                     SzallitasiCim = currentRendelesAdatok.SzallitasiCim,
@@ -177,25 +177,25 @@ namespace Backend.Controllers
                         })
                         .ToListAsync()
                     )
-                    .ConvertAll(static macskaAdatok => new Item<MacskaDTO> {
+                    .ConvertAll(static macskaAdatok => new ItemOut {
                         Macska = macskaAdatok.Macska.Convert(),
                         Mennyiseg = macskaAdatok.Mennyiseg
                     })
                 };
             }
-            return rendelesAdatokok;
+            return rendelesAdatokOutok;
         }
 
-        public class RendelesData
+        public class RendelesAdatokIn
         {
 #pragma warning disable CS8618
-            [Required] public string SzallitasiCim { get; set; }
+            [Required, MaxLength(Rendeles.SzallitasiCimMaxLength)] public string SzallitasiCim { get; set; }
 
-            [Required] public List<Item<int>> RendeltMacskak { get; set; }
+            [Required] public List<ItemIn> RendeltMacskak { get; set; }
 #pragma warning restore CS8618
         }
 
-        public class RendelesAdatok
+        public class RendelesAdatokOut
         {
             public int Id { get; set; }
 
@@ -207,12 +207,19 @@ namespace Backend.Controllers
 
             public DateTime RendelesIdeje { get; set; }
 
-            public required List<Item<MacskaDTO>> RendeltMacskak { get; set; }
+            public required List<ItemOut> RendeltMacskak { get; set; }
         }
 
-        public class Item<T>
+        public class ItemIn
         {
-            public required T Macska { get; set; }
+            [Required] public int Macska { get; set; }
+
+            [Required] public int Mennyiseg { get; set; }
+        }
+
+        public class ItemOut
+        {
+            public required MacskaDTO Macska { get; set; }
 
             public int Mennyiseg { get; set; }
         }

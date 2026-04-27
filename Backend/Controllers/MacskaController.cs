@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Backend.Controllers
 {
     [Route("macska"), Authorize(Policy = nameof(Felhasznalo.Engedely.TermekekKezelese))]
-    public class MacskaController(IDbContext context) : TableController<int, Macska, MacskaDTO>(context)
+    public class MacskaController(AppDbContext context) : TableController<int, Macska, MacskaDTO>(context)
     {
         protected override DbSet<Macska> DbSet => context.Macskak;
 

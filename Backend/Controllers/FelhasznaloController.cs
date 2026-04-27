@@ -13,7 +13,7 @@ using System.Text;
 namespace Backend.Controllers
 {
     [Route("felhasznalo")]
-    public class FelhasznaloController(IDbContext context, IConfiguration config) : TableController<int, Felhasznalo, FelhasznaloDTO>(context)
+    public class FelhasznaloController(AppDbContext context, IConfiguration config) : TableController<int, Felhasznalo, FelhasznaloDTO>(context)
     {
         const char delimiter = ';';
 

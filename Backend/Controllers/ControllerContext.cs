@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Backend.Controllers
 {
     [ApiController]
-    public abstract class ControllerContext(IDbContext context) : ControllerBase()
+    public abstract class ControllerContext(AppDbContext context) : ControllerBase()
     {
-        protected readonly IDbContext context = context;
+        protected readonly AppDbContext context = context;
 
         protected async Task<ActionResult<T>> CheckIfModelStateIsValidAsync<T>(Func<Task<ActionResult<T>>> handleRequest) => ModelState.IsValid ? await handleRequest() : BadRequest(ModelState);
 

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Backend.Controllers
 {
-    public abstract class TableController<TPrimaryKey, TDbFormat, TJsonFormat>(IDbContext context) : ControllerContext(context)
+    public abstract class TableController<TPrimaryKey, TDbFormat, TJsonFormat>(AppDbContext context) : ControllerContext(context)
         where TDbFormat : class, IConvertible<TJsonFormat>
         where TJsonFormat : class, IConvertible<TDbFormat>
     {

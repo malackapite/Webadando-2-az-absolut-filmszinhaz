@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.DAL
 {
-    public class AppDbContext(DbContextOptions<AppDbContext> contextOptions, IConfiguration config) : DbContext(contextOptions), IDbContext
+    public class AppDbContext(IConfiguration config) : DbContext()
     {
         readonly IConfiguration config = config;
         

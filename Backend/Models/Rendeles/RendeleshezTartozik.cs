@@ -16,7 +16,7 @@ namespace Backend.Models.Rendeles
 
         [ForeignKey(nameof(Rendeles))] public Rendeles _Rendeles { get; set; }
 
-        [ForeignKey(nameof(Models.Macska.Macska))] public Macska.Macska _Macska { get; set; }
+        [ForeignKey(nameof(Macska))] public Macska.Macska _Macska { get; set; }
 #pragma warning restore CS8618
     }
 }

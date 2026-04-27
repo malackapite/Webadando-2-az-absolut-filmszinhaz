@@ -17,7 +17,7 @@ namespace Backend
         public static void Main(string[] args)
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddScoped<IDbContext, AppDbContext>();
+            builder.Services.AddScoped<AppDbContext>();
             builder.Services.AddCors(static (CorsOptions options) => {
                 options.AddDefaultPolicy(static (CorsPolicyBuilder builder) => {
                     builder
