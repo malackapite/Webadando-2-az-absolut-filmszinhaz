@@ -13,5 +13,9 @@ angular.module('catApp', ['ngRoute'])
         templateUrl: 'views/checkout.html',
         controller: 'StepperController'
     })
+    .when('/admin', {
+        templateUrl: 'views/admin.html',
+        controller: 'AdminController'
+    })
     .otherwise({ redirectTo: '/login' });
 });
