@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,7 +18,10 @@ namespace Backend
         public static void Main(string[] args)
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddScoped<AppDbContext>();
+            builder.Services.AddDbContext<AppDbContext>((DbContextOptionsBuilder optionsBuilder) => {
+                optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
+            });
+            builder.Services.AddScoped<IDbContext>(static (IServiceProvider provider) => provider.GetRequiredService<AppDbContext>());
             builder.Services.AddCors(static (CorsOptions options) => {
                 options.AddDefaultPolicy(static (CorsPolicyBuilder builder) => {
                     builder
