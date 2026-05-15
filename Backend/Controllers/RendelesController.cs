@@ -11,7 +11,7 @@ using System.Security.Claims;
 namespace Backend.Controllers
 {
     [Route("rendeles"), Authorize(Policy = nameof(Felhasznalo.Engedely.RendelesekKeszitese))]
-    public class RendelesController(AppDbContext context) : ControllerContext(context)
+    public class RendelesController(IDbContext context) : ControllerContext(context)
     {
         [HttpGet, AllowAnonymous]
         public async Task<ActionResult<IEnumerable<RendelesAdatokOut>>> Get() => await PerformGetAll();
@@ -52,7 +52,7 @@ namespace Backend.Controllers
 
         [HttpPost]
         public async Task<ActionResult<RendelesAdatokOut>> Post([FromBody] RendelesAdatokIn rendelesAdatokIn)
-            => await CheckIfModelStateIsValidAsync(async () => await HandleDbUpdateException<RendelesAdatokOut>(async () => {
+            => await CheckIfModelStateIsValidAsync(async () => await HandleDbUpdateExceptionAsync<RendelesAdatokOut>(async () => {
                 if (!int.TryParse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int felhasznaloId))
                 {
                     return Unauthorized();
@@ -102,7 +102,7 @@ namespace Backend.Controllers
         ;
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<RendelesAdatokOut>> Delete([FromRoute] int id) => await HandleDbUpdateException<RendelesAdatokOut>(async () => {
+        public async Task<ActionResult<RendelesAdatokOut>> Delete([FromRoute] int id) => await HandleDbUpdateExceptionAsync<RendelesAdatokOut>(async () => {
             Rendeles? rendeles = await context.Rendelesek.FindAsync(id);
             if (rendeles is null)
             {
@@ -141,7 +141,7 @@ namespace Backend.Controllers
         });
 
         [HttpDelete]
-        public async Task<ActionResult<IEnumerable<RendelesAdatokOut>>> Delete() => await HandleDbUpdateException<IEnumerable<RendelesAdatokOut>>(async () => {
+        public async Task<ActionResult<IEnumerable<RendelesAdatokOut>>> Delete() => await HandleDbUpdateExceptionAsync<IEnumerable<RendelesAdatokOut>>(async () => {
             RendelesAdatokOut[] rendelesAdatokOutok = await PerformGetAll();
             await context.Rendelesek.ExecuteDeleteAsync();
             return rendelesAdatokOutok;

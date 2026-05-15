@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Backend.Controllers
 {
-    public abstract class TableController<TPrimaryKey, TDbFormat, TJsonFormat>(AppDbContext context) : ControllerContext(context)
+    public abstract class TableController<TPrimaryKey, TDbFormat, TJsonFormat>(IDbContext context) : ControllerContext(context)
         where TDbFormat : class, IConvertible<TJsonFormat>
         where TJsonFormat : class, IConvertible<TDbFormat>
     {
@@ -44,7 +44,7 @@ namespace Backend.Controllers
         public abstract Task<ActionResult<TJsonFormat>> Delete([FromRoute] TPrimaryKey pk);
 
         [HttpDelete]
-        public async Task<ActionResult<IEnumerable<TJsonFormat>>> Delete() => await HandleDbUpdateException<IEnumerable<TJsonFormat>>(async () => {
+        public async Task<ActionResult<IEnumerable<TJsonFormat>>> Delete() => await HandleDbUpdateExceptionAsync<IEnumerable<TJsonFormat>>(async () => {
             List<TJsonFormat> records = await ConvertAllToDTOAsync(DbSet);
             await DbSet.ExecuteDeleteAsync();
             return records;
@@ -58,7 +58,7 @@ namespace Backend.Controllers
             action(record);
         });
 
-        async Task<ActionResult<TJsonFormat>> TrySaveRecord(TDbFormat record, Action<TDbFormat> action) => await HandleDbUpdateException<TJsonFormat>(async () => {
+        async Task<ActionResult<TJsonFormat>> TrySaveRecord(TDbFormat record, Action<TDbFormat> action) => await HandleDbUpdateExceptionAsync<TJsonFormat>(async () => {
             action(record);
             try
             {

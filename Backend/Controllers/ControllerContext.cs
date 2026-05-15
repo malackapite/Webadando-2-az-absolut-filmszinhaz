@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Backend.Controllers
 {
     [ApiController]
-    public abstract class ControllerContext(AppDbContext context) : ControllerBase()
+    public abstract class ControllerContext(IDbContext context) : ControllerBase()
     {
-        protected readonly AppDbContext context = context;
+        protected readonly IDbContext context = context;
 
         protected async Task<ActionResult<T>> CheckIfModelStateIsValidAsync<T>(Func<Task<ActionResult<T>>> handleRequest) => ModelState.IsValid ? await handleRequest() : BadRequest(ModelState);
 
-        protected async Task<ActionResult<T>> HandleDbUpdateException<T>(Func<Task<ActionResult<T>>> func)
+        protected async Task<ActionResult<T>> HandleDbUpdateExceptionAsync<T>(Func<Task<ActionResult<T>>> func)
         {
             try
             {
