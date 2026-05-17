@@ -14,7 +14,7 @@
             </div>
             <div class="col-md-4">
                 <div class="input-group">
-                    <select class="form-select" style="max-width: 80px;" ng-model="szures.feltetel">
+                    <select class="form-select" style="max-width: 80px;" ng-model="szures.korFeltetel">
                         <option value="==">=</option>
                         <option value=">">></option>
                         <option value=">=">>=</option>
@@ -22,8 +22,21 @@
                         <option value="<=">&lt;=</option>
                         <option value="!=">!=</option>
                     </select>
-                    <input type="number" class="form-control" placeholder="Kor" ng-model="szures.kor">
+                    <input type="number" min="0" class="form-control" placeholder="Kor" ng-model="szures.kor">
                 </div>
+            </div>
+        </div>
+        <div class="col-md-4" style="padding-top: 8px;">
+            <div class="input-group">
+                <select class="form-select" style="max-width: 80px;" ng-model="szures.arFeltetel">
+                    <option value="==">=</option>
+                    <option value=">">></option>
+                    <option value=">=">>=</option>
+                    <option value="<">&lt;</option>
+                    <option value="<=">&lt;=</option>
+                    <option value="!=">!=</option>
+                </select>
+                <input type="number" min="1" class="form-control" placeholder="Ár" ng-model="szures.ar">
             </div>
         </div>
     </div>
@@ -35,6 +48,7 @@
                 <th>Név</th>
                 <th>Szín</th>
                 <th>Kor</th>
+                <th>Ár</th>
                 <th style="width: 1%;">Műveletek</th>
             </tr>
         </thead>
@@ -44,13 +58,14 @@
                 <td>{{cat.nev}}</td>
                 <td>{{cat.szin}}</td>
                 <td>{{cat.kor}}</td>
+                <td>{{cat.ar}} Ft</td>
                 <td class="text-nowrap">
                     <div class="">
                         <button class="btn btn-sm btn-success" ng-click="konfetti(cat)">
                             🎉💨
                         </button>
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                            data-bs-target="#szerkesztLap" ng-click="prepareEdit(cat)">
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#szerkesztLap"
+                            ng-click="prepareEdit(cat)">
                             ✏️💨
                         </button>
                         <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#torol"
@@ -71,9 +86,14 @@
                 </div>
                 <div class="modal-body">
                     <form name="newForm">
-                        <input type="text" ng-model="newCat.nev" class="form-control mb-2" placeholder="Név">
-                        <input type="text" ng-model="newCat.szin" class="form-control mb-2" placeholder="Szín">
-                        <input type="number" ng-model="newCat.kor" class="form-control" placeholder="Kor">
+                        <input type="text" ng-model="newCat.nev" class="form-control mb-2" placeholder="Név" required>
+                        <input type="text" ng-model="newCat.szin" class="form-control mb-2" placeholder="Szín" required>
+                        <input type="number" ng-model="newCat.kor" class="form-control" placeholder="Kor" min="0" required>
+                        <div class="input-group" style="padding-top: 8px;">
+                            <input type="number" ng-model="newCat.ar" class="form-control" placeholder="Ár" min="0"
+                                required>
+                            <span class="input-group-text">Ft</span>
+                        </div>
                     </form>
                     <div class="text-center mt-3"><img src="images/generator.gif" class="img-fluid"></div>
                 </div>
@@ -120,6 +140,11 @@
                         <div class="mb-3">
                             <label for="korsz" class="col-form-label">Kor:</label>
                             <input type="number" class="form-control" id="korsz" ng-model="editableCat.kor" min="0"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="arsz" class="col-form-label">Ár:</label>
+                            <input type="number" class="form-control" id="arsz" ng-model="editableCat.ar" min="0"
                                 required>
                         </div>
                         <div class="text-center">

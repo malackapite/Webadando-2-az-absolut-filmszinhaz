@@ -23,20 +23,30 @@
             <div class="card shadow" ng-show="currentStep === 2">
                 <div class="card-header bg-primary text-white"><h5>2. Szállítási adatok</h5></div>
                 <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12"><input type="text" class="form-control" placeholder="Teljes név" ng-model="form.vevo.nev"></div>
-                        <div class="col-md-4"><input type="text" class="form-control" placeholder="Irsz." ng-model="form.vevo.irsz"></div>
-                        <div class="col-md-8"><input type="text" class="form-control" placeholder="Város, Utca, Házszám" ng-model="form.vevo.cim"></div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold">Szállítási mód:</label>
-                            <select class="form-select" ng-model="form.szallitas" 
-                                    ng-options="s.nev + ' (+' + s.ar + ' Ft)' for s in szallitasiModok"></select>
+                    <form name="szallitasForm">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <input type="text" class="form-control" placeholder="Teljes név" ng-model="form.vevo.nev" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" placeholder="Irsz." ng-model="form.vevo.irsz" required>
+                            </div>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" placeholder="Város, Utca, Házszám" ng-model="form.vevo.cim" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Szállítási mód:</label>
+                                <select class="form-select" ng-model="form.szallitas" 
+                                        ng-options="s.nev + ' (+' + s.ar + ' Ft)' for s in szallitasiModok" required></select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-4">
-                        <button class="btn btn-secondary" ng-click="prevStep()">Vissza</button>
-                        <button class="btn btn-primary" ng-click="nextStep()">Tovább a fizetéshez</button>
-                    </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" ng-click="prevStep()">Vissza</button>
+                            <button type="button" class="btn btn-primary" ng-click="nextStep()" ng-disabled="szallitasForm.$invalid">
+                                Tovább a fizetéshez
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -45,24 +55,33 @@
                 <div class="card-body">
                     <h6>Fizetendő: <span class="text-danger">{{vegosszeg() | number}} Ft</span></h6>
                     <hr>
-                    <label class="form-label">Fizetési mód:</label>
-                    <select class="form-select mb-3" ng-model="form.fizetes" ng-options="f.nev for f in fizetesiModok"></select>
+                    <form name="fizetesForm">
+                        <label class="form-label">Fizetési mód:</label>
+                        <select class="form-select mb-3" ng-model="form.fizetes" ng-options="f.nev for f in fizetesiModok" required></select>
 
-                    <div class="bg-light p-3 border rounded" ng-show="form.fizetes.id === 'kartya'">
-                        <input type="text" class="form-control mb-2" placeholder="Kártyaszám (16 számjegy)" ng-model="form.kartya.szam">
-                        <div class="row">
-                            <div class="col"><input type="text" class="form-control" placeholder="MM/YY" ng-model="form.kartya.lejarat"></div>
-                            <div class="col"><input type="password" class="form-control" placeholder="CVV" ng-model="form.kartya.cvv"></div>
+                        <div class="bg-light p-3 border rounded" ng-show="form.fizetes.id === 'kartya'">
+                            <input type="text" class="form-control mb-2" placeholder="Kártyaszám (16 számjegy)" 
+                                   ng-model="form.kartya.szam" ng-required="form.fizetes.id === 'kartya'" ng-pattern="/^\d{16}$/">
+                            <div class="row">
+                                <div class="col">
+                                    <input type="text" class="form-control" placeholder="MM/YY" 
+                                           ng-model="form.kartya.lejarat" ng-required="form.fizetes.id === 'kartya'">
+                                </div>
+                                <div class="col">
+                                    <input type="password" class="form-control" placeholder="CVV" 
+                                           ng-model="form.kartya.cvv" ng-required="form.fizetes.id === 'kartya'" ng-pattern="/^\d{3}$/">
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="d-flex justify-content-between mt-4">
-                        <button class="btn btn-secondary" ng-click="prevStep()" ng-disabled="loading">Vissza</button>
-                        <button class="btn btn-success" ng-click="finishOrder()" ng-disabled="loading">
-                            <span ng-show="!loading">Rendelés megrendelése</span>
-                            <span ng-show="loading">Feldolgozás...</span>
-                        </button>
-                    </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" ng-click="prevStep()" ng-disabled="loading">Vissza</button>
+                            <button type="button" class="btn btn-success" ng-click="finishOrder()" ng-disabled="fizetesForm.$invalid || loading">
+                                <span ng-show="!loading">Rendelés megrendelése</span>
+                                <span ng-show="loading">Feldolgozás...</span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 

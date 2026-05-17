@@ -1,7 +1,7 @@
 angular.module('catApp')
 .controller('AdminController', function($scope, CatModel) {
     $scope.cats = [];
-    $scope.szures = { nev: '', szin: '', feltetel: '==', kor: '' };
+    $scope.szures = { nev: '', szin: '', korFeltetel: '==', kor: '', arFeltetel: '==', ar: '' };
     
     // Segédobjektumok a modálisokhoz
     $scope.editableCat = {}; 
@@ -20,11 +20,11 @@ angular.module('catApp')
 
         // 2. Kor szűrése a kiválasztott operátorral
         let korEgyezik = true;
-        if ($scope.szures.kor !== '' && $scope.szures.kor !== undefined) {
+        if ($scope.szures.kor) {
             const beirtKor = Number($scope.szures.kor);
             const macskaKora = Number(cat.kor);
-
-            switch ($scope.szures.feltetel) {
+            
+            switch ($scope.szures.korFeltetel) {
                 case '==': korEgyezik = (macskaKora === beirtKor); break;
                 case '>':  korEgyezik = (macskaKora > beirtKor); break;
                 case '>=': korEgyezik = (macskaKora >= beirtKor); break;
@@ -33,8 +33,24 @@ angular.module('catApp')
                 case '!=': korEgyezik = (macskaKora !== beirtKor); break;
             }
         }
+        
+        // 3. Ár szűrése a kiválasztott operátorral
+        let arEgyezik = true;
+        if ($scope.szures.ar) {
+            const macskaAra = Number(cat.ar);
+            const beirtAr = Number($scope.szures.ar);
+            
+            switch ($scope.szures.arFeltetel) {
+                case '==': arEgyezik = (macskaAra === beirtAr); break;
+                case '>':  arEgyezik = (macskaAra > beirtAr); break;
+                case '>=': arEgyezik = (macskaAra >= beirtAr); break;
+                case '<':  arEgyezik = (macskaAra < beirtAr); break;
+                case '<=': arEgyezik = (macskaAra <= beirtAr); break;
+                case '!=': arEgyezik = (macskaAra !== beirtAr); break;
+            }
+        }
 
-        return nevEgyezik && szinEgyezik && korEgyezik;
+        return nevEgyezik && szinEgyezik && korEgyezik && arEgyezik;
     };
 
     // CREATE

@@ -1,11 +1,12 @@
 angular.module('catApp')
 .factory('CatModel', function($http) {
+    const API_BASE_URL = "https://localhost:7063";
     let cart = {}; // Struktúra: { macskaId: darabszam }
 
     return {
         // READ
         loadCats: function() {
-            return $http.get("adat.json").then(resp => resp.data.OBJEKTUMLISTA);
+            return $http.get(`${API_BASE_URL}/macska`).then(resp => resp.data);
         },
 
         findCatById: function(id) {
@@ -14,23 +15,29 @@ angular.module('catApp')
 
         // CREATE
         saveCat: function(newCat) {
-            // Valódi backendnél: return $http.post("/api/cats", newCat);
-            console.log("Mentés (szimulált):", newCat);
-            return Promise.resolve(newCat); 
+            return $http.post(`${API_BASE_URL}/macska`, newCat).then(resp => resp.data
+            ).catch(err => {
+                console.error("Hiba a mentés során:", err);
+            });
         },
 
         // UPDATE
         updateCat: function(cat) {
-            // Valódi backendnél: return $http.put("/api/cats/" + cat.id, cat);
-            console.log("Módosítás (szimulált):", cat);
-            return Promise.resolve(cat);
+            return $http.patch(`${API_BASE_URL}/macska`, cat).then(
+                resp => resp.data
+            ).catch(err => {
+                console.error("Hiba a módosítás során:", err);
+            });
         },
 
         // DELETE
         deleteCat: function(id) {
-            // Valódi backendnél: return $http.delete("/api/cats/" + id);
-            console.log("Törlés (szimulált), ID:", id);
-            return Promise.resolve(id);
+            return $http.delete(`${API_BASE_URL}/macska/${id}`).then(resp => {
+                console.log("Törlés (valós), ID:", id);
+                return resp.data;
+            }).catch(err => {
+                console.error("Hiba a törlés során:", err);
+            });
         },
 
         getCart: () => cart,

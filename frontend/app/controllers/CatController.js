@@ -1,13 +1,14 @@
 angular.module('catApp')
-.controller('CatController', function($scope, CatModel, $location, $timeout) {
+.controller('CatController', function($scope, CatModel, $location, $timeout, $interval) {
     $scope.cats = [];
     $scope.nth = 0;
     $scope.vasaroltDb = 1;
+    $scope.userEmail = localStorage.getItem('felhasznalo') || "";
     let player = null;
 
     CatModel.loadCats().then(data => {
         $scope.cats = data;
-        init3D();
+        $timeout(init3D, 100);
     });
 
     function init3D() {
@@ -44,11 +45,83 @@ angular.module('catApp')
     }
 
     $scope.$on('$destroy', function() {
-    if (player) {
-        player.stop(); 
-        player.dispose(); 
+        $interval.cancel(timer);
+        if (player) {
+            player.stop(); 
+            player.dispose(); 
         }
     });
+
+    function frissitHatralevoIdo() {
+        const lejaratStr = localStorage.getItem("lejaratiIdopont");
+        
+        if (!lejaratStr) {
+            $scope.hatralevoIdo = "Nincs adat";
+            return;
+        }
+
+        const lejarat = new Date(lejaratStr);
+        const most = new Date();
+        const kulonbseg = lejarat - most;
+
+        if (kulonbseg <= 0) {
+            $scope.hatralevoIdo = "Lejárt!";
+            $scope.logout();
+            return;
+        }
+
+        const orak = Math.floor(kulonbseg / (1000 * 60 * 60));
+        const percek = Math.floor((kulonbseg % (1000 * 60 * 60)) / (1000 * 60));
+        const masodpercek = Math.floor((kulonbseg % (1000 * 60)) / 1000);
+
+        $scope.hatralevoIdo = 
+            (orak < 10 ? '0' : '') + orak + ':' + 
+            (percek < 10 ? '0' : '') + percek + ':' + 
+            (masodpercek < 10 ? '0' : '') + masodpercek;
+    }
+
+    $scope.logout = function() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("felhasznalo");
+        localStorage.removeItem("lejaratiIdopont");
+
+        $location.path('/login');
+    };
+
+    frissitHatralevoIdo();
+    const timer = $interval(frissitHatralevoIdo, 1000);
+
+    $scope.getLathatoGombok = function() {
+    const maxGomb = 5;
+    const osszesen = $scope.cats.length;
+    
+    // Ha kevesebb macska van, mint 5, akkor az összeset mutatjuk
+    if (osszesen <= maxGomb) {
+        return $scope.cats.map((c, index) => index);
+    }
+
+    // Kiszámoljuk a start pozíciót, hogy az 'nth' lehetőleg középen legyen
+    let start = $scope.nth - Math.floor(maxGomb / 2);
+    
+    // Biztonsági korrekciók, hogy ne csússzunk ki a tömbből
+    if (start < 0) {
+        start = 0;
+    }
+    if (start + maxGomb > osszesen) {
+        start = osszesen - maxGomb;
+    }
+
+    // Legyártjuk a fix 5 darab indexet tartalmazó tömböt (pl: [2, 3, 4, 5, 6])
+    let gombok = [];
+    for (let i = start; i < start + maxGomb; i++) {
+        gombok.push(i);
+    }
+    return gombok;
+};
+
+    $scope.getLength = function() {
+        return $scope.cats.length;
+    };
 
     // Lapozás
     $scope.lapoz = function(irany) {
@@ -73,9 +146,9 @@ angular.module('catApp')
         let currentCat = $scope.cats[$scope.nth];
         if ($scope.vasaroltDb > 0 && $scope.vasaroltDb < 100) {
             CatModel.addToCart(currentCat.id, $scope.vasaroltDb);
-            new bootstrap.Toast($('#sikeresVasarlas')).show();
+            new bootstrap.Toast(document.getElementById('sikeresVasarlas')).show();
         } else {
-            new bootstrap.Toast($('#liveToast')).show();
+            new bootstrap.Toast(document.getElementById('liveToast')).show();
         }
     };
 

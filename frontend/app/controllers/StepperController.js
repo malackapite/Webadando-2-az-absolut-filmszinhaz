@@ -1,9 +1,24 @@
 angular.module('catApp')
-.controller('StepperController', function($scope, OrderModel, CatModel, $timeout) {
+.controller('StepperController', function($http, $scope, OrderModel, CatModel, $timeout) {
     $scope.currentStep = 1; // 1: Kosár, 2: Szállítás, 3: Fizetés, 4: Siker
     $scope.termekek = [];
     $scope.szallitasiModok = OrderModel.getSzallitasiModok();
     $scope.fizetesiModok = OrderModel.getFizetesiModok();
+
+    $scope.rendelesLeadas = function() {
+        console.log($scope.form, $scope.termekek);
+        
+        return $http.post('https://localhost:7063/rendeles', {
+            szallitasiCim: $scope.form.vevo.cim,
+            rendeltMacskak: $scope.termekek.map(item => ({ 
+                macska: item.adat.id, 
+                mennyiseg: item.db 
+            })),    
+        }).then(resp => resp.data)
+        .catch(err => {
+            console.error("Hiba a rendelés leadásakor:", err);
+        });
+    };
 
     // Felhasználói adatok objektuma
     $scope.form = {
@@ -52,10 +67,18 @@ angular.module('catApp')
 
     $scope.finishOrder = function() {
         $scope.loading = true;
-        $timeout(function() {
+        this.rendelesLeadas().then(() => {
             $scope.loading = false;
             $scope.currentStep = 4;
-        }, 2000);
+        })
+        .catch(() => {
+            $scope.loading = false;
+            alert("Hiba történt a rendelés leadásakor. Kérem, próbálja újra.");
+        });
+        // $timeout(function() {
+        //     $scope.loading = false;
+        //     $scope.currentStep = 4;
+        // }, 2000);
         CatModel.deleteCart();
     };
 

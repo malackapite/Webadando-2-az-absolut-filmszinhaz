@@ -28,8 +28,28 @@
     <script src="app/controllers/AdminController.js"></script>
 
     <script type="module">
+        import * as THREE from './three.module.js';
         import { APP } from './app.js';
+        import { VRButton } from './VRButton.js';
+        
         window.APP = APP;
+        window.THREE = THREE; // Used by APP Scripts.
+        window.VRButton = VRButton; // Used by APP Scripts.
+
+        THREE.ColorManagement.enabled = true;
+
+        var loader = new THREE.FileLoader();
+        loader.load('app.json', function (text) {
+            var player = new APP.Player();
+            player.load(JSON.parse(text));
+            player.setSize(document.getElementById("macska3D").clientWidth, document.getElementById("macska3D").clientHeight);
+            player.play();
+            document.getElementById("macska3D").appendChild(player.dom);
+
+            window.addEventListener('resize', function () {
+                player.setSize(document.getElementById("macska3D").clientWidth, document.getElementById("macska3D").clientHeight);
+            });
+        });
     </script>
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3">

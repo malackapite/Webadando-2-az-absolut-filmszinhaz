@@ -5,3 +5,11 @@
 #macska3D{
     height: 400px;
 }
+
+.link-danger img {
+    transition: filter 0.2s ease; 
+}
+
+.link-danger:hover img {
+    filter: grayscale(1) brightness(0) saturate(100%) invert(24%) sepia(91%) saturate(5000%) hue-rotate(340deg);
+}
