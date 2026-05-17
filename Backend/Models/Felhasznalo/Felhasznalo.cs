@@ -10,8 +10,8 @@ namespace Backend.Models.Felhasznalo
         [Flags]
         public enum Engedely : byte
         {
-            TermekekKezelese,
-            RendelesekKeszitese
+            TermekekKezelese = 1,
+            RendelesekKeszitese = 1 << 1
         }
 #pragma warning disable CS8618
         [Key] public int Id { get; set; }

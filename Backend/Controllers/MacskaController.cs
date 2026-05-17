@@ -32,6 +32,8 @@ namespace Backend.Controllers
 
             public byte? Kor { get; set; }
 
+            public int? Ar { get; set; }
+
             public void Patch(Macska macska)
             {
                 if (Nev is not null)
@@ -45,6 +47,10 @@ namespace Backend.Controllers
                 if (Kor.HasValue)
                 {
                     macska.Kor = Kor.Value;
+                }
+                if (Ar.HasValue)
+                {
+                    macska.Ar = Ar.Value;
                 }
             }
         }
