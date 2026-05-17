@@ -14,7 +14,7 @@ angular.module('catApp', ['ngRoute'])
         controller: 'StepperController',
         resolve: {
             auth: ['$q', '$location', 'AuthService', function($q, $location, AuthService) {
-                return checkPermission('RendelesekKeszitese')($q, $location, AuthService);
+                return checkPermission('RendelesekKeszitese', '/login')($q, $location, AuthService);
             }]
         }
     })
@@ -23,11 +23,11 @@ angular.module('catApp', ['ngRoute'])
         controller: 'AdminController',
         resolve: {
             auth: ['$q', '$location', 'AuthService', function($q, $location, AuthService) {
-                return checkPermission('TermekekKezelese')($q, $location, AuthService);
+                return checkPermission('TermekekKezelese', '/login')($q, $location, AuthService);
             }]
         }
     })
-    .otherwise({ redirectTo: '/login' });
+    .otherwise({ redirectTo: '/shop' });
 
     // HTTP interceptor hozzáadása a token automatikus küldéséhez
     $httpProvider.interceptors.push(function($q, $location) {
@@ -52,13 +52,30 @@ angular.module('catApp', ['ngRoute'])
     };
 });
 
-// Route guard helper
-function checkPermission(permission) {
+function checkAuth(permission) {
+    return function($q, $location) {
+        const token = localStorage.getItem("token");
+        const lejaratStr = localStorage.getItem("lejaratiIdopont");
+        
+        if (token && lejaratStr) {
+            const lejarat = new Date(lejaratStr);
+            const most = new Date();
+            
+            if (lejarat - most > 0) return true; 
+        }
+        if (jwtDecode(token)[permission] === "true") return true;
+        
+        $location.path('/login');
+        return $q.reject('Bejelentkezés szükséges');
+    };
+}
+
+function checkPermission(permission, redirectPath) {
     return function($q, $location, AuthService) {
         if (AuthService.hasPermission(permission)) {
             return true;
         }
-        $location.path('/shop');
+        $location.path(redirectPath);
         return $q.reject('Nincs jogosultság');
     };
 }
@@ -66,7 +83,7 @@ function checkPermission(permission) {
 function jwtDecode(token) {
     try {
         const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/'); 
         return JSON.parse(window.atob(base64));
     } catch (e) {
         console.error("JWT dekódolási hiba:", e);

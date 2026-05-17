@@ -1,18 +1,49 @@
 angular.module('catApp')
-.controller('LoginController', function($scope, $location, $timeout, AuthModel) {
+.controller('LoginController', function($http, $scope, $location, $timeout, AuthModel) {
     $scope.inputs = AuthModel.getLoginFields();
     $scope.adatok = {};
     $scope.shakeClass = "";
+    $scope.isRegisterMode = false;
+    const API_BASE_URL = "https://localhost:7063";
+
+    $scope.toggleMode = function() {
+        $scope.isRegisterMode = !$scope.isRegisterMode;
+        $scope.adatok = {};
+        $scope.shakeClass = "";
+    };
+
 
     $scope.handleSubmit = function() {
-        AuthModel.login($scope.adatok)
+        if ($scope.isRegisterMode) {
+            $http.post(`${API_BASE_URL}/felhasznalo`, {
+                email: $scope.adatok["Email-cím"],
+                jelszo: $scope.adatok["Jelszó"],
+                engedelyek: [
+                    "RendelesekKeszitese",
+                ]
+            })
+            .then(function(resp) {
+                const toastElem = document.getElementById('regisztracioToast');
+                if (toastElem) {
+                    const toast = new bootstrap.Toast(toastElem);
+                    toast.show();
+                }
+                $scope.toggleMode();
+            })
+            .catch(function(err) {
+                console.error("Regisztrációs hiba:", err);
+                $scope.shakeClass = "shake"; 
+            });
+        } else {
+            AuthModel.login($scope.adatok)
             .then(function(valasz) {
                 AuthModel.saveSession($scope.adatok["Email-cím"], valasz.data);
-                const decodedToken = $scope.jwtDecode(valasz.data.token);
-                if (decodedToken && decodedToken["RendelesekKeszitese"] === "false") {
-                    $location.path('/shop');
-                } else if (decodedToken /* && decodedToken["TermekekKezelese"] === "true" */) {
+                const decodedToken = jwtDecode(valasz.data.token);
+                if (decodedToken && decodedToken["TermekekKezelese"] === "true") {
                     $location.path('/admin');
+                }
+                else if (decodedToken) {
+                    $location.path('/shop');
                 }
             })
             .catch(function(error) {
@@ -22,16 +53,6 @@ angular.module('catApp')
                     $scope.shakeClass = "";
                 }, 500);
             });
-    };
-
-    $scope.jwtDecode = function(token) {
-        try {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            return JSON.parse(window.atob(base64));
-        } catch (e) {
-            console.error("JWT dekódolási hiba:", e);
-            return null;
         }
     };
 });

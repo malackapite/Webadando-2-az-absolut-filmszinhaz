@@ -1,7 +1,36 @@
 <div class="container mt-4" ng-controller="AdminController">
     <header class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Admin Felület <small class="text-muted">(CRUD)</small></h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ad">Új macska</button>
+        <h2>Admin Felület</h2>
+
+        <div class="d-flex align-items-center bg-light border rounded-pill px-3 py-1 shadow-sm" ng-show="userEmail">
+
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                style="width: 32px; height: 32px; font-size: 12px; letter-spacing: 0.5px;">
+                {{ (userEmail || '').substring(0, 1).toUpperCase() }}
+            </div>
+
+            <div class="d-flex flex-column ms-2 me-3" style="line-height: 1.1;">
+                <span class="small fw-semibold text-secondary">{{ userEmail }}</span>
+                <span class="text-muted" style="font-size: 10px;">
+                    Munkamenet: <strong class="text-danger font-monospace">{{ hatralevoIdo }}</strong>
+                </span>
+            </div>
+
+            <button class="btn btn-sm btn-link text-muted p-1 border-0 link-danger" ng-click="logout()"
+                title="Kijelentkezés">
+                <img src="images/svgviewer-output.svg" width="18" height="18" alt="Kijelentkezés">
+
+            </button>
+        </div>
+
+        <div class="btn-group shadow-sm" role="group" aria-label="Navigáció és műveletek">
+            <button type="button" class="btn btn-secondary" ng-click="goToShop()">
+                Irány a Shop
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ad">
+                Új macska
+            </button>
+        </div>
     </header>
 
     <div class="card mb-4 p-4 bg-light">
@@ -88,7 +117,8 @@
                     <form name="newForm">
                         <input type="text" ng-model="newCat.nev" class="form-control mb-2" placeholder="Név" required>
                         <input type="text" ng-model="newCat.szin" class="form-control mb-2" placeholder="Szín" required>
-                        <input type="number" ng-model="newCat.kor" class="form-control" placeholder="Kor" min="0" required>
+                        <input type="number" ng-model="newCat.kor" class="form-control" placeholder="Kor" min="0"
+                            required>
                         <div class="input-group" style="padding-top: 8px;">
                             <input type="number" ng-model="newCat.ar" class="form-control" placeholder="Ár" min="0"
                                 required>

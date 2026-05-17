@@ -33,7 +33,6 @@ angular.module('catApp')
         // DELETE
         deleteCat: function(id) {
             return $http.delete(`${API_BASE_URL}/macska/${id}`).then(resp => {
-                console.log("Törlés (valós), ID:", id);
                 return resp.data;
             }).catch(err => {
                 console.error("Hiba a törlés során:", err);

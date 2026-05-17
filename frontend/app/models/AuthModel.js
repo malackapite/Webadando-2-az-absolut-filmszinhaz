@@ -19,8 +19,6 @@ angular.module('catApp')
         },
 
         saveSession: function(email, responseData) {
-            console.log(email, responseData);
-            
             localStorage.setItem("felhasznalo", email);
             localStorage.setItem("token", responseData.token);
             localStorage.setItem("lejaratiIdopont", responseData.lejaratiIdopont);

@@ -1,5 +1,6 @@
 <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
-    <form id="bejelentkezes-form" ng-class="shakeClass" ng-submit="handleSubmit()">
+    <form id="bejelentkezes-form" ng-class="shakeClass" ng-submit="handleSubmit()" class="w-100" style="max-width: 400px;">
+        <h3 class="mb-4 text-center">{{ isRegisterMode ? 'Regisztráció' : 'Bejelentkezés' }}</h3>
         
         <div class="mb-3" ng-repeat="input in inputs">
             <label class="form-label">{{ input.columnName }}:</label>
@@ -10,10 +11,25 @@
                 required>
         </div>
 
-        <div class="d-flex justify-content-end mt-4">
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <button type="button" class="btn btn-link p-0 text-decoration-none" ng-click="toggleMode()">
+                {{ isRegisterMode ? 'Már van fiókod? Belépek' : 'Nincs még fiókod? Regisztráció' }}
+            </button>
+
             <button type="submit" class="btn btn-primary">
-                Bejelentkezés
+                {{ isRegisterMode ? 'Regisztrálok' : 'Bejelentkezés' }}
             </button>
         </div>
     </form>
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+    <div id="regisztracioToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <strong>Sikeres regisztráció!</strong> Most már bejelentkezhetsz a fiókodba.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
 </div>

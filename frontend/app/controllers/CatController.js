@@ -84,6 +84,7 @@ angular.module('catApp')
         localStorage.removeItem("token");
         localStorage.removeItem("felhasznalo");
         localStorage.removeItem("lejaratiIdopont");
+        CatModel.deleteCart();
 
         $location.path('/login');
     };
@@ -95,26 +96,15 @@ angular.module('catApp')
     const maxGomb = 5;
     const osszesen = $scope.cats.length;
     
-    // Ha kevesebb macska van, mint 5, akkor az összeset mutatjuk
     if (osszesen <= maxGomb) {
         return $scope.cats.map((c, index) => index);
     }
 
-    // Kiszámoljuk a start pozíciót, hogy az 'nth' lehetőleg középen legyen
-    let start = $scope.nth - Math.floor(maxGomb / 2);
-    
-    // Biztonsági korrekciók, hogy ne csússzunk ki a tömbből
-    if (start < 0) {
-        start = 0;
-    }
-    if (start + maxGomb > osszesen) {
-        start = osszesen - maxGomb;
-    }
+    let start = Math.max(0, Math.min($scope.nth - Math.floor(maxGomb / 2), osszesen - maxGomb));
 
-    // Legyártjuk a fix 5 darab indexet tartalmazó tömböt (pl: [2, 3, 4, 5, 6])
     let gombok = [];
-    for (let i = start; i < start + maxGomb; i++) {
-        gombok.push(i);
+    for (let ix = start; ix < start + maxGomb; ix++) {
+        gombok.push(ix);
     }
     return gombok;
 };
@@ -152,6 +142,18 @@ angular.module('catApp')
         }
     };
 
+    $scope.reszosszeg = function() {
+        if (!$scope.kosarlista) return 0;
+        
+        return Object.keys($scope.kosarlista).reduce((osszeg, id) => {
+            let macska = $scope.getCatById(id);
+            let darabszam = $scope.kosarlista[id];
+            
+            if (macska && macska.ar) return osszeg + (macska.ar * darabszam);
+            return osszeg;
+        }, 0);
+    };
+
     $scope.getCatById = function(id) {
         return $scope.cats.find(c => c.id == id);
     };
@@ -165,7 +167,11 @@ angular.module('catApp')
     };
 
     $scope.fizetes = function() {
-        $('#kosarPanel').modal('hide');
+        const modalElem = document.getElementById('kosarPanel');
+        if (modalElem) {
+            const modalInstance = bootstrap.Modal.getInstance(modalElem) || new bootstrap.Modal(modalElem);
+            modalInstance.hide();
+        }
         $location.path('/checkout');
     };
 });

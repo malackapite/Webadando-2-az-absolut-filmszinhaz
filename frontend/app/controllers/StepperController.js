@@ -6,7 +6,6 @@ angular.module('catApp')
     $scope.fizetesiModok = OrderModel.getFizetesiModok();
 
     $scope.rendelesLeadas = function() {
-        console.log($scope.form, $scope.termekek);
         
         return $http.post('https://localhost:7063/rendeles', {
             szallitasiCim: $scope.form.vevo.cim,
@@ -75,10 +74,6 @@ angular.module('catApp')
             $scope.loading = false;
             alert("Hiba történt a rendelés leadásakor. Kérem, próbálja újra.");
         });
-        // $timeout(function() {
-        //     $scope.loading = false;
-        //     $scope.currentStep = 4;
-        // }, 2000);
         CatModel.deleteCart();
     };
 
